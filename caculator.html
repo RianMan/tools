@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>数值计算器</title>
+    <style>
+      body {
+        font-family: "Microsoft YaHei", Arial, sans-serif;
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+
+      .calculator {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+      }
+
+      h1 {
+        text-align: center;
+        color: #4a5568;
+        font-size: 24px;
+        margin-bottom: 30px;
+        font-weight: 300;
+      }
+
+      .input-group {
+        margin-bottom: 15px;
+        position: relative;
+      }
+
+      .input-field {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        background: #f8fafc;
+      }
+
+      .input-field:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.1);
+      }
+
+      .input-field:hover {
+        border-color: #cbd5e0;
+        background: white;
+      }
+
+      .add-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .add-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .result {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 25px;
+        box-shadow: 0 10px 20px rgba(72, 187, 120, 0.2);
+      }
+
+      .remove-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 30px;
+        height: 30px;
+        background: #e53e3e;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+
+      .remove-btn:hover {
+        background: #c53030;
+        transform: translateY(-50%) scale(1.1);
+      }
+
+      .input-group:first-child .remove-btn {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calculator">
+      <h1>数值计算</h1>
+      <div id="inputs">
+        <div class="input-group">
+          <input
+            type="number"
+            class="input-field"
+            placeholder="请输入数值"
+            step="0.01"
+            oninput="calculate()"
+          />
+          <button class="remove-btn" onclick="removeInput(this)">×</button>
+        </div>
+      </div>
+      <button class="add-btn" onclick="addInput()">+ 添加输入框</button>
+      <div class="result" id="result">总计：¥0.00</div>
+    </div>
+
+    <script>
+      function addInput() {
+        const inputsContainer = document.getElementById("inputs");
+        const newInputGroup = document.createElement("div");
+        newInputGroup.className = "input-group";
+        newInputGroup.innerHTML = `
+                <input type="number" class="input-field" placeholder="请输入数值" step="0.01" oninput="calculate()">
+                <button class="remove-btn" onclick="removeInput(this)">×</button>
+            `;
+        inputsContainer.appendChild(newInputGroup);
+      }
+
+      function removeInput(button) {
+        const inputGroup = button.parentElement;
+        inputGroup.remove();
+        calculate();
+      }
+
+      function calculate() {
+        const inputs = document.querySelectorAll(".input-field");
+        let total = 0;
+
+        inputs.forEach((input) => {
+          const value = parseFloat(input.value) || 0;
+          total += value;
+        });
+
+        document.getElementById(
+          "result"
+        ).textContent = `总计：¥${total.toLocaleString("zh-CN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      }
+    </script>
+  </body>
+</html>

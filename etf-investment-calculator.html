@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华安纳斯达克100ETF定投计算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            background-color: #0066cc;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        button:hover {
+            background-color: #0055aa;
+        }
+        .result {
+            margin-top: 24px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 16px;
+            display: none;
+        }
+        .result-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+        .investment-amount {
+            font-size: 24px;
+            text-align: center;
+            padding: 16px;
+            font-weight: bold;
+            color: #0066cc;
+            background-color: #e6f2ff;
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+        .strategy {
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .basic {
+            color: #333;
+        }
+        .low-mild {
+            color: #009933;
+        }
+        .low-medium {
+            color: #006622;
+        }
+        .low-heavy {
+            color: #004d1a;
+        }
+        .high-mild {
+            color: #cc6600;
+        }
+        .high-heavy {
+            color: #993300;
+        }
+        .history-section {
+            margin-top: 32px;
+        }
+        .history-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        .history-table th, .history-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .history-table th {
+            background-color: #f0f0f0;
+        }
+        .clear-history {
+            background-color: #ff3333;
+            margin-top: 8px;
+        }
+        .clear-history:hover {
+            background-color: #cc0000;
+        }
+        .date-time {
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>华安纳斯达克100ETF</h1>
+        <h2>159632 定投计算器</h2>
+    </div>
+
+    <div class="form-group">
+        <label for="ma30">当前MA30值:</label>
+        <input type="number" id="ma30" step="0.001" placeholder="例如: 1.703">
+    </div>
+
+    <div class="form-group">
+        <label for="current-price">当前ETF价格:</label>
+        <input type="number" id="current-price" step="0.001" placeholder="例如: 1.650">
+    </div>
+
+    <button onclick="calculateInvestment()">计算定投金额</button>
+
+    <div class="result" id="result">
+        <div class="result-header">计算结果</div>
+        <div class="date-time" id="date-time"></div>
+        
+        <div class="result-item">
+            <span>MA30值:</span>
+            <span id="result-ma30"></span>
+        </div>
+        <div class="result-item">
+            <span>当前价格:</span>
+            <span id="result-price"></span>
+        </div>
+        <div class="result-item">
+            <span>偏离比例:</span>
+            <span id="result-deviation"></span>
+        </div>
+        
+        <div class="strategy" id="strategy"></div>
+        <div class="investment-amount" id="investment-amount"></div>
+        
+        <button onclick="saveToHistory()">保存到历史记录</button>
+    </div>
+
+    <div class="history-section" id="history-section">
+        <div class="history-header">历史记录</div>
+        <table class="history-table" id="history-table">
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>MA30</th>
+                    <th>价格</th>
+                    <th>偏离%</th>
+                    <th>策略</th>
+                    <th>金额(元)</th>
+                </tr>
+            </thead>
+            <tbody id="history-body">
+                <!-- 历史记录将在这里动态添加 -->
+            </tbody>
+        </table>
+        <button class="clear-history" onclick="clearHistory()">清除历史记录</button>
+    </div>
+
+    <script>
+        // 页面加载时显示历史记录
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHistory();
+        });
+
+        function calculateInvestment() {
+            // 获取输入值
+            const ma30 = parseFloat(document.getElementById('ma30').value);
+            const currentPrice = parseFloat(document.getElementById('current-price').value);
+            
+            // 验证输入
+            if (isNaN(ma30) || isNaN(currentPrice)) {
+                alert('请输入有效的数字!');
+                return;
+            }
+            
+            // 计算偏离百分比
+            const deviation = (currentPrice - ma30) / ma30 * 100;
+            
+            // 根据策略确定投资金额和策略名称
+            let investment, strategy, strategyClass;
+            
+            if (deviation >= -2 && deviation <= 2) {
+                // 基准投入：价格在MA30±2%范围内
+                investment = 1000;
+                strategy = "基准投入";
+                strategyClass = "basic";
+            } else if (deviation < -2 && deviation >= -5) {
+                // 低位加码1：价格低于MA30的3-5%
+                investment = 1500;
+                strategy = "低位加码(轻度)";
+                strategyClass = "low-mild";
+            } else if (deviation < -5 && deviation >= -10) {
+                // 低位加码2：价格低于MA30的5-10%
+                investment = 2000;
+                strategy = "低位加码(中度)";
+                strategyClass = "low-medium";
+            } else if (deviation < -10) {
+                // 低位加码3：价格低于MA30的10%以上
+                investment = 3000;
+                strategy = "低位加码(重度)";
+                strategyClass = "low-heavy";
+            } else if (deviation > 2 && deviation <= 5) {
+                // 高位减码1：价格高于MA30的3-5%
+                investment = 750;
+                strategy = "高位减码(轻度)";
+                strategyClass = "high-mild";
+            } else {  // deviation > 5
+                // 高位减码2：价格高于MA30的5%以上
+                investment = 500;
+                strategy = "高位减码(重度)";
+                strategyClass = "high-heavy";
+            }
+            
+            // 显示结果
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result-ma30').textContent = ma30.toFixed(3);
+            document.getElementById('result-price').textContent = currentPrice.toFixed(3);
+            document.getElementById('result-deviation').textContent = deviation.toFixed(2) + '%';
+            
+            const strategyElement = document.getElementById('strategy');
+            strategyElement.textContent = strategy;
+            strategyElement.className = 'strategy ' + strategyClass;
+            
+            document.getElementById('investment-amount').textContent = investment + '元';
+            
+            // 设置日期时间
+            const now = new Date();
+            document.getElementById('date-time').textContent = now.toLocaleString();
+        }
+        
+        function saveToHistory() {
+            // 获取结果数据
+            const date = new Date().toLocaleDateString();
+            const ma30 = document.getElementById('result-ma30').textContent;
+            const price = document.getElementById('result-price').textContent;
+            const deviation = document.getElementById('result-deviation').textContent;
+            const strategy = document.getElementById('strategy').textContent;
+            const amount = document.getElementById('investment-amount').textContent;
+            
+            // 创建历史记录对象
+            const historyItem = {
+                date: date,
+                ma30: ma30,
+                price: price,
+                deviation: deviation,
+                strategy: strategy,
+                amount: amount
+            };
+            
+            // 获取现有历史记录
+            let history = localStorage.getItem('etfHistory');
+            let historyArray = [];
+            
+            if (history) {
+                historyArray = JSON.parse(history);
+            }
+            
+            // 添加新记录到历史
+            historyArray.unshift(historyItem); // 添加到数组开头，使最新记录显示在顶部
+            
+            // 保存回localStorage
+            localStorage.setItem('etfHistory', JSON.stringify(historyArray));
+            
+            // 更新显示
+            loadHistory();
+            
+            alert('已保存到历史记录');
+        }
+        
+        function loadHistory() {
+            const historyBody = document.getElementById('history-body');
+            historyBody.innerHTML = '';
+            
+            // 获取历史记录
+            let history = localStorage.getItem('etfHistory');
+            
+            if (history) {
+                const historyArray = JSON.parse(history);
+                
+                // 如果没有记录，隐藏历史部分
+                if (historyArray.length === 0) {
+                    document.getElementById('history-section').style.display = 'none';
+                    return;
+                }
+                
+                // 显示历史部分
+                document.getElementById('history-section').style.display = 'block';
+                
+                // 为每条记录创建表格行
+                historyArray.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${item.date}</td>
+                        <td>${item.ma30}</td>
+                        <td>${item.price}</td>
+                        <td>${item.deviation}</td>
+                        <td>${item.strategy}</td>
+                        <td>${item.amount}</td>
+                    `;
+                    
+                    historyBody.appendChild(row);
+                });
+            } else {
+                document.getElementById('history-section').style.display = 'none';
+            }
+        }
+        
+        function clearHistory() {
+            if (confirm('确定要清除所有历史记录吗？')) {
+                localStorage.removeItem('etfHistory');
+                loadHistory();
+            }
+        }
+    </script>
+</body>
+</html>
