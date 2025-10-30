@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETF定投计算器 - 牛市策略版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .result-section {
+            display: none;
+        }
+        
+        .result-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            color: #333;
+        }
+        
+        .main-result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .main-result .label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .main-result .amount {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .main-result .strategy {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .info-item .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .info-item .value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .deviation {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .deviation.positive {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .deviation.negative {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .callback-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .callback-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .callback-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .callback-table th,
+        .callback-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .callback-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .callback-table td {
+            font-size: 14px;
+        }
+        
+        .callback-table .price {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .callback-table .amount {
+            font-weight: 600;
+            color: #28a745;
+        }
+        
+        .tips {
+            background: #e7f3ff;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .tips .tips-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .tips ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        
+        .tips li {
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        .history-section {
+            margin-top: 16px;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-top: 12px;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            margin-top: 8px;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        
+        .history-table th,
+        .history-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .history-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .base-price-section {
+            background: #fff9e6;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #ffd700;
+        }
+        
+        .base-price-section .title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .base-price-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff8c00;
+            text-align: center;
+            margin: 12px 0;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 13px;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐂 ETF定投计算器</h1>
+            <div class="subtitle">牛市策略：大跌大补，小跌小补，不跌不补</div>
+        </div>
+
+        <div class="card">
+            <div class="base-price-section">
+                <div class="title">
+                    <span>📍 建仓基准价格</span>
+                    <button class="btn btn-small btn-secondary" onclick="setBasePrice()">设置基准价</button>
+                </div>
+                <div class="base-price-display" id="base-price-display">未设置</div>
+                <div style="font-size: 12px; color: #666; text-align: center;">
+                    首次使用请先设置建仓基准价格（用于计算回调加仓触发点）
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="ma30">📊 当前MA30值</label>
+                <input type="number" id="ma30" step="0.001" placeholder="例如: 2.09">
+            </div>
+
+            <div class="form-group">
+                <label for="current-price">💰 当前ETF价格</label>
+                <input type="number" id="current-price" step="0.001" placeholder="例如: 2.225">
+            </div>
+
+            <button class="btn btn-primary" onclick="calculate()">💡 计算定投金额</button>
+        </div>
+
+        <div class="card result-section" id="result-section">
+            <div class="result-header">📈 本周定投建议</div>
+            
+            <div class="main-result">
+                <div class="label">本周建议投入</div>
+                <div class="amount" id="investment-amount">0</div>
+                <div class="strategy" id="strategy-name"></div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label">MA30值</div>
+                    <div class="value" id="display-ma30">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">当前价格</div>
+                    <div class="value" id="display-price">-</div>
+                </div>
+            </div>
+
+            <div class="deviation" id="deviation-display"></div>
+
+            <div class="callback-section">
+                <div class="callback-title">🎯 回调加仓触发价格表</div>
+                <table class="callback-table">
+                    <thead>
+                        <tr>
+                            <th>回调幅度</th>
+                            <th>触发价格</th>
+                            <th>买入金额</th>
+                        </tr>
+                    </thead>
+                    <tbody id="callback-tbody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tips">
+                <div class="tips-title">💡 操作提示</div>
+                <ul>
+                    <li>每周三下午2点执行定投</li>
+                    <li>在券商App设置好回调价格的限价单</li>
+                    <li>单周最大投入不超过3万元</li>
+                    <li>单月最大投入不超过10万元</li>
+                    <li>始终保留至少5万元应急资金</li>
+                </ul>
+            </div>
+
+            <button class="btn btn-secondary" onclick="saveRecord()">💾 保存本次记录</button>
+        </div>
+
+        <div class="card history-section" id="history-section" style="display: none;">
+            <div class="result-header">📝 历史记录</div>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>MA30</th>
+                        <th>价格</th>
+                        <th>偏离%</th>
+                        <th>金额</th>
+                    </tr>
+                </thead>
+                <tbody id="history-tbody">
+                </tbody>
+            </table>
+            <button class="btn btn-danger" onclick="clearHistory()">🗑️ 清除历史</button>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBasePrice();
+            loadHistory();
+        });
+
+        // 设置基准价格
+        function setBasePrice() {
+            const currentPrice = document.getElementById('current-price').value;
+            
+            if (!currentPrice || isNaN(parseFloat(currentPrice))) {
+                const inputPrice = prompt('请输入建仓基准价格（建议使用首次建仓时的价格）:', '2.225');
+                if (inputPrice && !isNaN(parseFloat(inputPrice))) {
+                    localStorage.setItem('basePrice', inputPrice);
+                    loadBasePrice();
+                    alert('基准价格已设置！');
+                }
+            } else {
+                if (confirm('是否将当前输入的价格 ' + currentPrice + ' 设为基准价格？')) {
+                    localStorage.setItem('basePrice', currentPrice);
+                    loadBasePrice();
+                    alert('基准价格已设置！');
+                }
+            }
+        }
+
+        // 加载基准价格
+        function loadBasePrice() {
+            const basePrice = localStorage.getItem('basePrice');
+            const display = document.getElementById('base-price-display');
+            
+            if (basePrice) {
+                display.textContent = parseFloat(basePrice).toFixed(3);
+            } else {
+                display.textContent = '未设置';
+            }
+        }
+
+        // 计算定投金额
+        function calculate() {
+            const ma30 = parseFloat(document.getElementById('ma30').value);
+            const currentPrice = parseFloat(document.getElementById('current-price').value);
+            const basePrice = parseFloat(localStorage.getItem('basePrice'));
+
+            // 验证输入
+            if (isNaN(ma30) || isNaN(currentPrice)) {
+                alert('请输入有效的数字！');
+                return;
+            }
+
+            if (isNaN(basePrice)) {
+                alert('请先设置建仓基准价格！');
+                return;
+            }
+
+            // 计算价格偏离度
+            const deviation = ((currentPrice - ma30) / ma30) * 100;
+
+            // 根据偏离度确定投资金额
+            let weeklyAmount, strategyName;
+
+            if (deviation > 5) {
+                weeklyAmount = 5000;
+                strategyName = '高位减码';
+            } else if (deviation > 2) {
+                weeklyAmount = 7500;
+                strategyName = '略高减码';
+            } else if (deviation >= -2) {
+                weeklyAmount = 10000;
+                strategyName = '基准投入';
+            } else if (deviation >= -5) {
+                weeklyAmount = 15000;
+                strategyName = '略低加码';
+            } else if (deviation >= -10) {
+                weeklyAmount = 20000;
+                strategyName = '中度加码';
+            } else {
+                weeklyAmount = 30000;
+                strategyName = '重度加码';
+            }
+
+            // 显示结果
+            document.getElementById('result-section').style.display = 'block';
+            document.getElementById('investment-amount').textContent = weeklyAmount.toLocaleString() + '元';
+            document.getElementById('strategy-name').textContent = strategyName;
+            document.getElementById('display-ma30').textContent = ma30.toFixed(3);
+            document.getElementById('display-price').textContent = currentPrice.toFixed(3);
+
+            // 显示偏离度
+            const deviationDisplay = document.getElementById('deviation-display');
+            deviationDisplay.textContent = `价格偏离MA30: ${deviation.toFixed(2)}%`;
+            deviationDisplay.className = 'deviation ' + (deviation >= 0 ? 'positive' : 'negative');
+
+            // 生成回调加仓表格
+            generateCallbackTable(basePrice, currentPrice);
+
+            // 滚动到结果
+            document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 生成回调加仓表格
+        function generateCallbackTable(basePrice, currentPrice) {
+            const callbackLevels = [
+                { percent: 2, amount: 10000, label: '小跌小补' },
+                { percent: 5, amount: 15000, label: '小跌小补' },
+                { percent: 10, amount: 25000, label: '中跌中补' },
+                { percent: 15, amount: 35000, label: '大跌大补' },
+                { percent: 20, amount: 50000, label: '大跌大补' },
+                { percent: 25, amount: 25000, label: '极限补仓' }
+            ];
+
+            const tbody = document.getElementById('callback-tbody');
+            tbody.innerHTML = '';
+
+            callbackLevels.forEach(level => {
+                const triggerPrice = basePrice * (1 - level.percent / 100);
+                const currentDeviation = ((currentPrice - triggerPrice) / triggerPrice) * 100;
+                
+                const row = document.createElement('tr');
+                
+                // 如果当前价格已经低于触发价格，高亮显示
+                if (currentPrice <= triggerPrice) {
+                    row.style.background = '#d4edda';
+                    row.style.fontWeight = 'bold';
+                }
+                
+                row.innerHTML = `
+                    <td>-${level.percent}%</td>
+                    <td class="price">${triggerPrice.toFixed(3)}</td>
+                    <td class="amount">${level.amount.toLocaleString()}元</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // 保存记录
+        function saveRecord() {
+            const ma30 = document.getElementById('display-ma30').textContent;
+            const price = document.getElementById('display-price').textContent;
+            const deviation = document.getElementById('deviation-display').textContent;
+            const amount = document.getElementById('investment-amount').textContent;
+
+            const record = {
+                date: new Date().toLocaleDateString(),
+                ma30: ma30,
+                price: price,
+                deviation: deviation.match(/-?\d+\.\d+/)[0] + '%',
+                amount: amount
+            };
+
+            let history = JSON.parse(localStorage.getItem('etfHistory') || '[]');
+            history.unshift(record);
+            
+            // 只保留最近50条记录
+            if (history.length > 50) {
+                history = history.slice(0, 50);
+            }
+            
+            localStorage.setItem('etfHistory', JSON.stringify(history));
+            loadHistory();
+            alert('✅ 已保存到历史记录');
+        }
+
+        // 加载历史记录
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('etfHistory') || '[]');
+            const tbody = document.getElementById('history-tbody');
+            const section = document.getElementById('history-section');
+
+            if (history.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            tbody.innerHTML = '';
+
+            history.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.date}</td>
+                    <td>${record.ma30}</td>
+                    <td>${record.price}</td>
+                    <td>${record.deviation}</td>
+                    <td>${record.amount}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 清除历史
+        function clearHistory() {
+            if (confirm('确定要清除所有历史记录吗？')) {
+                localStorage.removeItem('etfHistory');
+                loadHistory();
+                alert('✅ 历史记录已清除');
+            }
+        }
+    </script>
+</body>
+</html>
