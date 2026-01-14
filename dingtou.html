@@ -90,7 +90,7 @@
       }
 
       .inline-group select {
-        width: 200px;
+        flex: 1;
       }
 
       .btn {
@@ -339,6 +339,59 @@
         color: #5f6c7d;
         border: 1px solid #e9ecef;
       }
+
+      .custom-input-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      .custom-input-group input {
+        width: 80px;
+        padding: 8px;
+        font-size: 16px;
+        text-align: center;
+      }
+
+      .custom-input-group span {
+        color: #5f6c7d;
+        font-size: 14px;
+      }
+
+      #custom-hands-input {
+        display: none;
+      }
+
+      .quick-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+
+      .quick-btn {
+        padding: 6px 12px;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #5f6c7d;
+        transition: all 0.2s;
+      }
+
+      .quick-btn:hover {
+        background: #e8f4f8;
+        border-color: #5f8dd3;
+        color: #5f8dd3;
+      }
+
+      .quick-btn.active {
+        background: #5f8dd3;
+        border-color: #5f8dd3;
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -375,25 +428,45 @@
 
         <div class="min-hands-section">
           <div class="title">
-            🎯 交易单位
-            <span class="help-icon" title="某些股票必须按N手的整数倍买入"
-              >?</span
+            🎯 交易单位（必须买N手的整数倍）
+            <span class="help-icon" title="设置股票的交易单位限制">?</span>
+          </div>
+
+          <div class="quick-buttons">
+            <button class="quick-btn active" onclick="setQuickHands(1)">
+              1手
+            </button>
+            <button class="quick-btn" onclick="setQuickHands(2)">2手</button>
+            <button class="quick-btn" onclick="setQuickHands(3)">3手</button>
+            <button class="quick-btn" onclick="setQuickHands(5)">5手</button>
+            <button class="quick-btn" onclick="setQuickHands(10)">10手</button>
+            <button class="quick-btn" onclick="showCustomInput()">
+              自定义
+            </button>
+          </div>
+
+          <div class="custom-input-group" id="custom-hands-input">
+            <span>自定义:</span>
+            <input
+              type="number"
+              id="custom-hands-value"
+              min="1"
+              max="100"
+              step="1"
+              placeholder="输入手数"
+              onchange="applyCustomHands()"
+            />
+            <span
+              >手（<span id="custom-shares-display">-</span>股）的整数倍</span
             >
           </div>
-          <div class="inline-group">
-            <span style="color: #5f6c7d">必须买</span>
-            <select id="min-hands" onchange="saveSettings()">
-              <option value="1">1手（100股）的整数倍</option>
-              <option value="2">2手（200股）的整数倍</option>
-              <option value="3">3手（300股）的整数倍</option>
-              <option value="4">4手（400股）的整数倍</option>
-              <option value="5">5手（500股）的整数倍</option>
-              <option value="10">10手（1000股）的整数倍</option>
-            </select>
-          </div>
+
+          <input type="hidden" id="min-hands" value="1" />
+
           <div class="example-box">
-            💡
-            示例：选择"2手的整数倍"，则只能买200、400、600、800股（不能买100、300、500股）
+            💡 当前设置：只能买
+            <strong><span id="unit-display">100</span></strong> 股的整数倍
+            <span id="unit-example"></span>
           </div>
         </div>
 
@@ -479,7 +552,77 @@
       // 页面加载时初始化
       document.addEventListener("DOMContentLoaded", function () {
         loadSettings();
+        updateUnitDisplay();
       });
+
+      // 设置快捷手数
+      function setQuickHands(hands) {
+        document.getElementById("min-hands").value = hands;
+        document.getElementById("custom-hands-input").style.display = "none";
+
+        // 更新按钮状态
+        document.querySelectorAll(".quick-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+
+        updateUnitDisplay();
+        saveSettings();
+      }
+
+      // 显示自定义输入
+      function showCustomInput() {
+        document.getElementById("custom-hands-input").style.display = "flex";
+        document.getElementById("custom-hands-value").focus();
+
+        // 更新按钮状态
+        document.querySelectorAll(".quick-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+      }
+
+      // 应用自定义手数
+      function applyCustomHands() {
+        const customHands = parseInt(
+          document.getElementById("custom-hands-value").value
+        );
+
+        if (isNaN(customHands) || customHands < 1) {
+          alert("请输入有效的手数（至少1手）！");
+          return;
+        }
+
+        if (customHands > 100) {
+          alert("手数不能超过100！");
+          return;
+        }
+
+        document.getElementById("min-hands").value = customHands;
+        document.getElementById("custom-shares-display").textContent =
+          customHands * 100;
+        updateUnitDisplay();
+        saveSettings();
+      }
+
+      // 更新单位显示
+      function updateUnitDisplay() {
+        const minHands = parseInt(document.getElementById("min-hands").value);
+        const unit = minHands * 100;
+
+        document.getElementById("unit-display").textContent = unit;
+
+        const exampleDisplay = document.getElementById("unit-example");
+        if (minHands === 1) {
+          exampleDisplay.textContent = "（可买100、200、300、400...股）";
+        } else {
+          const examples = [];
+          for (let i = 1; i <= 3; i++) {
+            examples.push(unit * i);
+          }
+          exampleDisplay.textContent = `（可买${examples.join("、")}...股）`;
+        }
+      }
 
       // 保存设置
       function saveSettings() {
