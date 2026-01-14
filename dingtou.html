@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>个股定投计算器 - 支持最小起购限制</title>
+    <title>个股定投计算器</title>
     <style>
       * {
         margin: 0;
@@ -14,7 +14,7 @@
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
           sans-serif;
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: #f5f7fa;
         min-height: 100vh;
         padding: 16px;
       }
@@ -26,7 +26,7 @@
 
       .header {
         text-align: center;
-        color: white;
+        color: #2c3e50;
         padding: 20px 0;
         margin-bottom: 20px;
       }
@@ -34,19 +34,20 @@
       .header h1 {
         font-size: 24px;
         margin-bottom: 8px;
+        font-weight: 600;
       }
 
       .header .subtitle {
         font-size: 14px;
-        opacity: 0.9;
+        color: #7f8c8d;
       }
 
       .card {
         background: white;
-        border-radius: 12px;
+        border-radius: 8px;
         padding: 20px;
         margin-bottom: 16px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
 
       .form-group {
@@ -56,8 +57,8 @@
       label {
         display: block;
         margin-bottom: 8px;
-        font-weight: 600;
-        color: #333;
+        font-weight: 500;
+        color: #2c3e50;
         font-size: 15px;
       }
 
@@ -65,16 +66,17 @@
       select {
         width: 100%;
         padding: 12px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
+        border: 1px solid #dfe6e9;
+        border-radius: 6px;
         font-size: 16px;
         transition: border-color 0.3s;
+        background: #fff;
       }
 
       input:focus,
       select:focus {
         outline: none;
-        border-color: #f5576c;
+        border-color: #5f8dd3;
       }
 
       .inline-group {
@@ -88,23 +90,27 @@
       }
 
       .inline-group select {
-        width: 150px;
+        width: 200px;
       }
 
       .btn {
         width: 100%;
         padding: 14px;
         border: none;
-        border-radius: 8px;
+        border-radius: 6px;
         font-size: 16px;
-        font-weight: 600;
+        font-weight: 500;
         cursor: pointer;
         transition: all 0.3s;
       }
 
       .btn-primary {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: #5f8dd3;
         color: white;
+      }
+
+      .btn-primary:hover {
+        background: #4a7bc2;
       }
 
       .btn-primary:active {
@@ -117,16 +123,17 @@
 
       .result-header {
         font-size: 18px;
-        font-weight: bold;
+        font-weight: 600;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 2px solid #f0f0f0;
-        color: #333;
+        border-bottom: 1px solid #ecf0f1;
+        color: #2c3e50;
       }
 
       .main-result {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        color: #2c3e50;
         padding: 24px;
         border-radius: 8px;
         text-align: center;
@@ -135,38 +142,39 @@
 
       .main-result .stock-info {
         font-size: 14px;
-        opacity: 0.9;
+        color: #7f8c8d;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        border-bottom: 1px solid #e9ecef;
       }
 
       .main-result .amount {
         font-size: 42px;
-        font-weight: bold;
+        font-weight: 600;
         margin: 16px 0;
+        color: #5f8dd3;
       }
 
       .main-result .shares-info {
         font-size: 18px;
-        opacity: 0.95;
         margin-top: 12px;
-        font-weight: 600;
+        font-weight: 500;
+        color: #34495e;
       }
 
       .main-result .strategy {
         font-size: 14px;
-        opacity: 0.9;
         margin-top: 12px;
         padding: 8px;
-        background: rgba(255, 255, 255, 0.2);
+        background: #e8f4f8;
         border-radius: 4px;
+        color: #5f8dd3;
       }
 
       .main-result .theory-amount {
         font-size: 13px;
-        opacity: 0.8;
         margin-top: 8px;
+        color: #95a5a6;
       }
 
       .info-grid {
@@ -179,51 +187,52 @@
       .info-item {
         background: #f8f9fa;
         padding: 12px;
-        border-radius: 8px;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
       }
 
       .info-item .label {
         font-size: 12px;
-        color: #666;
+        color: #7f8c8d;
         margin-bottom: 4px;
       }
 
       .info-item .value {
         font-size: 18px;
         font-weight: 600;
-        color: #333;
+        color: #2c3e50;
       }
 
       .deviation {
         text-align: center;
         padding: 12px;
-        border-radius: 8px;
+        border-radius: 6px;
         margin-bottom: 20px;
-        font-weight: 600;
+        font-weight: 500;
       }
 
       .deviation.positive {
-        background: #fff3cd;
-        color: #856404;
+        background: #fff3e0;
+        color: #e67e22;
       }
 
       .deviation.negative {
-        background: #d1ecf1;
-        color: #0c5460;
+        background: #e8f5e9;
+        color: #27ae60;
       }
 
       .tips {
-        background: #ffe6f0;
+        background: #f8f9fa;
         padding: 16px;
-        border-radius: 8px;
+        border-radius: 6px;
         margin-top: 20px;
-        border-left: 4px solid #f5576c;
+        border-left: 3px solid #5f8dd3;
       }
 
       .tips .tips-title {
         font-weight: 600;
         margin-bottom: 8px;
-        color: #333;
+        color: #2c3e50;
       }
 
       .tips ul {
@@ -234,70 +243,75 @@
       .tips li {
         margin-bottom: 4px;
         font-size: 14px;
+        color: #5f6c7d;
       }
 
       .btn-secondary {
-        background: #6c757d;
+        background: #95a5a6;
         color: white;
         margin-top: 12px;
       }
 
+      .btn-secondary:hover {
+        background: #7f8c8d;
+      }
+
       .warning-box {
-        background: #fff3cd;
-        border: 2px solid #ffc107;
+        background: #fff9f0;
+        border: 1px solid #ffd89b;
         padding: 16px;
-        border-radius: 8px;
+        border-radius: 6px;
         margin-bottom: 20px;
       }
 
       .warning-box .warning-title {
         font-weight: 600;
-        color: #856404;
+        color: #d68910;
         margin-bottom: 8px;
         font-size: 15px;
       }
 
       .warning-box ul {
         margin-left: 20px;
-        color: #856404;
+        color: #9a7b4f;
         font-size: 14px;
       }
 
       .base-amount-section {
-        background: #e8f5e9;
+        background: #f0f9ff;
         padding: 16px;
-        border-radius: 8px;
+        border-radius: 6px;
         margin-bottom: 20px;
-        border: 2px solid #4caf50;
+        border: 1px solid #bae6fd;
       }
 
       .base-amount-section .title {
         font-weight: 600;
         margin-bottom: 12px;
-        color: #333;
+        color: #2c3e50;
       }
 
       .base-amount-input {
         width: 150px;
         padding: 10px;
-        border: 2px solid #4caf50;
+        border: 1px solid #5f8dd3;
         border-radius: 6px;
         font-size: 16px;
         font-weight: 600;
       }
 
       .min-hands-section {
-        background: #e3f2fd;
+        background: #f8f9fa;
         padding: 16px;
-        border-radius: 8px;
+        border-radius: 6px;
         margin-bottom: 20px;
-        border: 2px solid #2196f3;
+        border: 1px solid #dee2e6;
       }
 
       .min-hands-section .title {
         font-weight: 600;
         margin-bottom: 12px;
-        color: #333;
+        color: #2c3e50;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -307,7 +321,7 @@
         display: inline-block;
         width: 18px;
         height: 18px;
-        background: #2196f3;
+        background: #5f8dd3;
         color: white;
         border-radius: 50%;
         text-align: center;
@@ -315,13 +329,23 @@
         font-size: 12px;
         cursor: help;
       }
+
+      .example-box {
+        background: white;
+        padding: 12px;
+        border-radius: 4px;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #5f6c7d;
+        border: 1px solid #e9ecef;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
         <h1>📊 个股定投计算器</h1>
-        <div class="subtitle">支持最小起购限制 · 智能计算实际买入</div>
+        <div class="subtitle">基于MA30均线的智能定投策略</div>
       </div>
 
       <div class="card">
@@ -344,33 +368,32 @@
             step="1000"
             onchange="saveSettings()"
           />
-          <span style="font-size: 13px; color: #666; margin-left: 8px"
+          <span style="font-size: 13px; color: #7f8c8d; margin-left: 8px"
             >元/周</span
           >
         </div>
 
         <div class="min-hands-section">
           <div class="title">
-            🎯 最小起购限制
-            <span
-              class="help-icon"
-              title="某些股票规定必须至少买N手（N×100股）才能成交"
+            🎯 交易单位
+            <span class="help-icon" title="某些股票必须按N手的整数倍买入"
               >?</span
             >
           </div>
           <div class="inline-group">
-            <span>最少必须买</span>
+            <span style="color: #5f6c7d">必须买</span>
             <select id="min-hands" onchange="saveSettings()">
-              <option value="1">1手（100股）</option>
-              <option value="2">2手（200股）</option>
-              <option value="3">3手（300股）</option>
-              <option value="4">4手（400股）</option>
-              <option value="5">5手（500股）</option>
-              <option value="10">10手（1000股）</option>
+              <option value="1">1手（100股）的整数倍</option>
+              <option value="2">2手（200股）的整数倍</option>
+              <option value="3">3手（300股）的整数倍</option>
+              <option value="4">4手（400股）的整数倍</option>
+              <option value="5">5手（500股）的整数倍</option>
+              <option value="10">10手（1000股）的整数倍</option>
             </select>
           </div>
-          <div style="font-size: 12px; color: #666; margin-top: 8px">
-            💡 大部分股票是1手起，部分高价股或特殊股票可能要求2手或更多
+          <div class="example-box">
+            💡
+            示例：选择"2手的整数倍"，则只能买200、400、600、800股（不能买100、300、500股）
           </div>
         </div>
 
@@ -414,7 +437,7 @@
         <div class="main-result">
           <div class="stock-info" id="stock-info">-</div>
 
-          <div style="font-size: 14px; opacity: 0.9">本周应买入</div>
+          <div style="font-size: 14px; color: #7f8c8d">本周应买入</div>
           <div class="shares-info" id="shares-display">-</div>
 
           <div class="amount" id="actual-amount">-</div>
@@ -476,33 +499,34 @@
         document.getElementById("min-hands").value = minHands;
       }
 
-      // 计算实际可买份额和金额（考虑最小起购限制）
+      // 计算实际可买份额和金额（按交易单位的整数倍）
       function calculateActualShares(theoreticalAmount, price, minHands) {
-        const minUnit = 100; // 1手 = 100股
-        const minShares = minHands * minUnit; // 最小起购股数
+        const baseUnit = 100; // 1手 = 100股
+        const tradingUnit = minHands * baseUnit; // 交易单位（必须是这个数的整数倍）
 
         // 计算理论可买份额
         const theoreticalShares = Math.floor(theoreticalAmount / price);
 
-        // 向下取整到100的整数倍
-        let actualShares = Math.floor(theoreticalShares / minUnit) * minUnit;
+        // 向下取整到交易单位的整数倍
+        let actualShares =
+          Math.floor(theoreticalShares / tradingUnit) * tradingUnit;
 
-        // 如果计算出的股数小于最小起购限制，则按最小起购限制买入
-        if (actualShares < minShares) {
-          actualShares = minShares;
+        // 如果计算结果为0，则至少买1个交易单位
+        if (actualShares === 0) {
+          actualShares = tradingUnit;
         }
 
         // 计算实际金额
         const actualAmount = actualShares * price;
 
         // 计算手数
-        const hands = actualShares / minUnit;
+        const hands = actualShares / baseUnit;
 
         return {
           shares: actualShares,
           hands: hands,
           amount: actualAmount,
-          isMinPurchase: actualShares === minShares,
+          isMinPurchase: theoreticalShares < tradingUnit,
         };
       }
 
@@ -572,7 +596,7 @@
           "stock-info"
         ).textContent = `${stockName} @ ${currentPrice.toFixed(2)}元`;
 
-        // 如果是按最小起购限制买入，特别标注
+        // 显示股数
         let sharesDisplay = `${actual.shares}股（${actual.hands}手）`;
         if (actual.isMinPurchase && minHands > 1) {
           sharesDisplay += ` 🔒`;
@@ -589,7 +613,7 @@
             0
           )}元`;
           if (actual.isMinPurchase && minHands > 1) {
-            theoryDisplay.textContent += ` (因最小${minHands}手限制已调整)`;
+            theoryDisplay.textContent += ` (因交易单位限制已调整)`;
           }
         } else {
           theoryDisplay.textContent = "";
