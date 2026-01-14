@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>个股定投计算器 - 支持最小起购限制</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
+          sans-serif;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        min-height: 100vh;
+        padding: 16px;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        padding: 20px 0;
+        margin-bottom: 20px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+
+      .header .subtitle {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+        font-size: 15px;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #f5576c;
+      }
+
+      .inline-group {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .inline-group input {
+        width: 120px;
+      }
+
+      .inline-group select {
+        width: 150px;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+      }
+
+      .btn-primary:active {
+        transform: scale(0.98);
+      }
+
+      .result-section {
+        display: none;
+      }
+
+      .result-header {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0f0f0;
+        color: #333;
+      }
+
+      .main-result {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 24px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .main-result .stock-info {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .main-result .amount {
+        font-size: 42px;
+        font-weight: bold;
+        margin: 16px 0;
+      }
+
+      .main-result .shares-info {
+        font-size: 18px;
+        opacity: 0.95;
+        margin-top: 12px;
+        font-weight: 600;
+      }
+
+      .main-result .strategy {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-top: 12px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+      }
+
+      .main-result .theory-amount {
+        font-size: 13px;
+        opacity: 0.8;
+        margin-top: 8px;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .info-item {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 8px;
+      }
+
+      .info-item .label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+      }
+
+      .info-item .value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .deviation {
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
+
+      .deviation.positive {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .deviation.negative {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+
+      .tips {
+        background: #ffe6f0;
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border-left: 4px solid #f5576c;
+      }
+
+      .tips .tips-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+      }
+
+      .tips ul {
+        margin-left: 20px;
+        color: #555;
+      }
+
+      .tips li {
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+        margin-top: 12px;
+      }
+
+      .warning-box {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .warning-box .warning-title {
+        font-weight: 600;
+        color: #856404;
+        margin-bottom: 8px;
+        font-size: 15px;
+      }
+
+      .warning-box ul {
+        margin-left: 20px;
+        color: #856404;
+        font-size: 14px;
+      }
+
+      .base-amount-section {
+        background: #e8f5e9;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 2px solid #4caf50;
+      }
+
+      .base-amount-section .title {
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #333;
+      }
+
+      .base-amount-input {
+        width: 150px;
+        padding: 10px;
+        border: 2px solid #4caf50;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .min-hands-section {
+        background: #e3f2fd;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 2px solid #2196f3;
+      }
+
+      .min-hands-section .title {
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .help-icon {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        background: #2196f3;
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 18px;
+        font-size: 12px;
+        cursor: help;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>📊 个股定投计算器</h1>
+        <div class="subtitle">支持最小起购限制 · 智能计算实际买入</div>
+      </div>
+
+      <div class="card">
+        <div class="warning-box">
+          <div class="warning-title">⚠️ 个股定投风险提示</div>
+          <ul>
+            <li>个股风险远高于指数ETF，请谨慎操作</li>
+            <li>建议仅用闲置资金，不超过总资产的20%</li>
+            <li>选择基本面良好、行业龙头的优质股票</li>
+          </ul>
+        </div>
+
+        <div class="base-amount-section">
+          <div class="title">💰 基准定投金额（1倍时）</div>
+          <input
+            type="number"
+            id="base-amount"
+            class="base-amount-input"
+            value="10000"
+            step="1000"
+            onchange="saveSettings()"
+          />
+          <span style="font-size: 13px; color: #666; margin-left: 8px"
+            >元/周</span
+          >
+        </div>
+
+        <div class="min-hands-section">
+          <div class="title">
+            🎯 最小起购限制
+            <span
+              class="help-icon"
+              title="某些股票规定必须至少买N手（N×100股）才能成交"
+              >?</span
+            >
+          </div>
+          <div class="inline-group">
+            <span>最少必须买</span>
+            <select id="min-hands" onchange="saveSettings()">
+              <option value="1">1手（100股）</option>
+              <option value="2">2手（200股）</option>
+              <option value="3">3手（300股）</option>
+              <option value="4">4手（400股）</option>
+              <option value="5">5手（500股）</option>
+              <option value="10">10手（1000股）</option>
+            </select>
+          </div>
+          <div style="font-size: 12px; color: #666; margin-top: 8px">
+            💡 大部分股票是1手起，部分高价股或特殊股票可能要求2手或更多
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="stock-name">📌 股票名称/代码（可选）</label>
+          <input
+            type="text"
+            id="stock-name"
+            placeholder="例如: 贵州茅台 / 600519"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="ma30">📊 当前MA30值</label>
+          <input
+            type="number"
+            id="ma30"
+            step="0.01"
+            placeholder="例如: 32.00"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="current-price">💰 当前股价</label>
+          <input
+            type="number"
+            id="current-price"
+            step="0.01"
+            placeholder="例如: 30.00"
+          />
+        </div>
+
+        <button class="btn btn-primary" onclick="calculate()">
+          💡 计算本周定投金额
+        </button>
+      </div>
+
+      <div class="card result-section" id="result-section">
+        <div class="result-header">📈 本周定投方案</div>
+
+        <div class="main-result">
+          <div class="stock-info" id="stock-info">-</div>
+
+          <div style="font-size: 14px; opacity: 0.9">本周应买入</div>
+          <div class="shares-info" id="shares-display">-</div>
+
+          <div class="amount" id="actual-amount">-</div>
+
+          <div class="theory-amount" id="theory-amount">-</div>
+          <div class="strategy" id="strategy-name">-</div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="label">MA30值</div>
+            <div class="value" id="display-ma30">-</div>
+          </div>
+          <div class="info-item">
+            <div class="label">当前股价</div>
+            <div class="value" id="display-price">-</div>
+          </div>
+        </div>
+
+        <div class="deviation" id="deviation-display"></div>
+
+        <div class="tips">
+          <div class="tips-title">💡 操作建议</div>
+          <ul>
+            <li>每周三下午2-3点之间执行买入</li>
+            <li>使用限价单，按照计算的股数下单</li>
+            <li>如当日停牌或涨停，顺延至下一交易日</li>
+            <li>长期坚持，不被短期波动影响</li>
+          </ul>
+        </div>
+
+        <button class="btn btn-secondary" onclick="saveRecord()">
+          💾 保存本次记录
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // 页面加载时初始化
+      document.addEventListener("DOMContentLoaded", function () {
+        loadSettings();
+      });
+
+      // 保存设置
+      function saveSettings() {
+        const baseAmount = document.getElementById("base-amount").value;
+        const minHands = document.getElementById("min-hands").value;
+
+        localStorage.setItem("baseAmount", baseAmount);
+        localStorage.setItem("minHands", minHands);
+      }
+
+      // 加载设置
+      function loadSettings() {
+        const baseAmount = localStorage.getItem("baseAmount") || "10000";
+        const minHands = localStorage.getItem("minHands") || "1";
+
+        document.getElementById("base-amount").value = baseAmount;
+        document.getElementById("min-hands").value = minHands;
+      }
+
+      // 计算实际可买份额和金额（考虑最小起购限制）
+      function calculateActualShares(theoreticalAmount, price, minHands) {
+        const minUnit = 100; // 1手 = 100股
+        const minShares = minHands * minUnit; // 最小起购股数
+
+        // 计算理论可买份额
+        const theoreticalShares = Math.floor(theoreticalAmount / price);
+
+        // 向下取整到100的整数倍
+        let actualShares = Math.floor(theoreticalShares / minUnit) * minUnit;
+
+        // 如果计算出的股数小于最小起购限制，则按最小起购限制买入
+        if (actualShares < minShares) {
+          actualShares = minShares;
+        }
+
+        // 计算实际金额
+        const actualAmount = actualShares * price;
+
+        // 计算手数
+        const hands = actualShares / minUnit;
+
+        return {
+          shares: actualShares,
+          hands: hands,
+          amount: actualAmount,
+          isMinPurchase: actualShares === minShares,
+        };
+      }
+
+      // 计算定投金额
+      function calculate() {
+        const stockName =
+          document.getElementById("stock-name").value || "该股票";
+        const ma30 = parseFloat(document.getElementById("ma30").value);
+        const currentPrice = parseFloat(
+          document.getElementById("current-price").value
+        );
+        const baseAmount = parseFloat(
+          document.getElementById("base-amount").value
+        );
+        const minHands = parseInt(document.getElementById("min-hands").value);
+
+        // 验证输入
+        if (isNaN(ma30) || isNaN(currentPrice)) {
+          alert("请输入有效的MA30值和股价！");
+          return;
+        }
+
+        if (isNaN(baseAmount) || baseAmount <= 0) {
+          alert("请设置有效的基准定投金额！");
+          return;
+        }
+
+        // 计算价格偏离度
+        const deviation = ((currentPrice - ma30) / ma30) * 100;
+
+        // 根据偏离度确定投资倍数和策略
+        let multiplier, strategyName;
+
+        if (deviation > 5) {
+          multiplier = 0.5;
+          strategyName = "高位减码（0.5倍）";
+        } else if (deviation > 2) {
+          multiplier = 0.75;
+          strategyName = "略高减码（0.75倍）";
+        } else if (deviation >= -2) {
+          multiplier = 1.0;
+          strategyName = "基准投入（1倍）";
+        } else if (deviation >= -5) {
+          multiplier = 1.5;
+          strategyName = "略低加码（1.5倍）";
+        } else if (deviation >= -10) {
+          multiplier = 2.0;
+          strategyName = "中度加码（2倍）";
+        } else {
+          multiplier = 3.0;
+          strategyName = "重度加码（3倍）";
+        }
+
+        // 计算理论投入金额
+        const theoreticalAmount = baseAmount * multiplier;
+
+        // 计算实际可买份额和金额
+        const actual = calculateActualShares(
+          theoreticalAmount,
+          currentPrice,
+          minHands
+        );
+
+        // 显示结果
+        document.getElementById("result-section").style.display = "block";
+        document.getElementById(
+          "stock-info"
+        ).textContent = `${stockName} @ ${currentPrice.toFixed(2)}元`;
+
+        // 如果是按最小起购限制买入，特别标注
+        let sharesDisplay = `${actual.shares}股（${actual.hands}手）`;
+        if (actual.isMinPurchase && minHands > 1) {
+          sharesDisplay += ` 🔒`;
+        }
+
+        document.getElementById("shares-display").textContent = sharesDisplay;
+        document.getElementById("actual-amount").textContent =
+          actual.amount.toFixed(2) + "元";
+
+        // 显示理论金额（如果与实际金额不同）
+        const theoryDisplay = document.getElementById("theory-amount");
+        if (Math.abs(actual.amount - theoreticalAmount) > 1) {
+          theoryDisplay.textContent = `理论建议：${theoreticalAmount.toFixed(
+            0
+          )}元`;
+          if (actual.isMinPurchase && minHands > 1) {
+            theoryDisplay.textContent += ` (因最小${minHands}手限制已调整)`;
+          }
+        } else {
+          theoryDisplay.textContent = "";
+        }
+
+        document.getElementById("strategy-name").textContent = strategyName;
+        document.getElementById("display-ma30").textContent = ma30.toFixed(2);
+        document.getElementById("display-price").textContent =
+          currentPrice.toFixed(2);
+
+        // 显示偏离度
+        const deviationDisplay = document.getElementById("deviation-display");
+        deviationDisplay.textContent = `价格偏离MA30: ${deviation.toFixed(2)}%`;
+        deviationDisplay.className =
+          "deviation " + (deviation >= 0 ? "positive" : "negative");
+
+        // 滚动到结果
+        document
+          .getElementById("result-section")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      // 保存记录
+      function saveRecord() {
+        const stockName =
+          document.getElementById("stock-name").value || "未命名";
+        const ma30 = document.getElementById("display-ma30").textContent;
+        const price = document.getElementById("display-price").textContent;
+        const shares = document.getElementById("shares-display").textContent;
+        const amount = document.getElementById("actual-amount").textContent;
+        const deviation =
+          document.getElementById("deviation-display").textContent;
+
+        const record = {
+          date: new Date().toLocaleDateString(),
+          stock: stockName,
+          ma30: ma30,
+          price: price,
+          shares: shares,
+          amount: amount,
+          deviation: deviation.match(/-?\d+\.\d+/)[0] + "%",
+        };
+
+        let history = JSON.parse(localStorage.getItem("stockHistory") || "[]");
+        history.unshift(record);
+
+        if (history.length > 50) {
+          history = history.slice(0, 50);
+        }
+
+        localStorage.setItem("stockHistory", JSON.stringify(history));
+        alert("✅ 已保存到历史记录");
+      }
+    </script>
+  </body>
+</html>
